@@ -1,54 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "CameraPawn.h"
 
 ACameraPawn::ACameraPawn()
 {
- //    // Set this pawn to call Tick() every frame.
- //    PrimaryActorTick.bCanEverTick = true;
- //
- //    // Create a spring arm component
- //    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
- //    SpringArm->SetupAttachment(RootComponent);
- //    SpringArm->bDoCollisionTest = false; // Do not want to pull camera in when it collides with level
- //
- //    // Create a camera component
- //    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
- //    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	// GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CameraComponent set"));
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(RootComponent); // Attach to the root component
+	SpringArm->bDoCollisionTest = false; // Avoid the camera adjusting its position based on collision
+	SpringArm->TargetArmLength = 800.f; // Starting length of the spring arm (adjust as needed)
+	SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f)); // Adjust to the desired angle for RTS
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Attach to the spring arm
 }
 
 void ACameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-/* from DefaultPawn
-	static bool bBindingsAdded = false;
-	if (!bBindingsAdded)
-	{
-		bBindingsAdded = true;
-
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveForward", EKeys::W, 1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveForward", EKeys::S, -1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveForward", EKeys::Up, 1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveForward", EKeys::Down, -1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveForward", EKeys::Gamepad_LeftY, 1.f));
-
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveRight", EKeys::A, -1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveRight", EKeys::D, 1.f));
-		UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping("DefaultPawn_MoveRight", EKeys::Gamepad_LeftX, 1.f));
-	}
-
-*/
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
 	const UInputAction* MoveForwardAction = FindObject<UInputAction>(ANY_PACKAGE, TEXT("IA_MoveForward"));
 	const UInputAction* MoveBackwardAction = FindObject<UInputAction>(ANY_PACKAGE, TEXT("IA_MoveBackward"));
 	const UInputAction* MoveRightAction = FindObject<UInputAction>(ANY_PACKAGE, TEXT("IA_MoveRight"));
 	const UInputAction* MoveLeftAction = FindObject<UInputAction>(ANY_PACKAGE, TEXT("IA_MoveLeft"));
+
+	const UInputAction* ZoomAction = FindObject<UInputAction>(ANY_PACKAGE, TEXT("IA_Zoom"));
 	
 	EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Triggered, this, &ACameraPawn::MoveForward);
 	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Triggered, this, &ACameraPawn::MoveBackward);
 	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Triggered, this, &ACameraPawn::MoveRight);
 	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Triggered, this, &ACameraPawn::MoveLeft);
+
+	EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ACameraPawn::Zoom);
 
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Callbacks set"));
 }
@@ -75,4 +55,13 @@ void ACameraPawn::MoveLeft(const FInputActionValue& Value)
 {
 	FVector MoveDirection = GetActorRightVector() * -Value.Get<float>();
 	AddMovementInput(MoveDirection);
+}
+
+void ACameraPawn::Zoom(const FInputActionValue& Value)
+{
+	const float AxisValue = -Value.Get<float>();	
+	if (AxisValue != 0.f)
+	{
+		SpringArm->TargetArmLength = FMath::Clamp(SpringArm->TargetArmLength + AxisValue * ZoomSpeed, MinZoom, MaxZoom);
+	}
 }

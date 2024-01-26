@@ -20,15 +20,24 @@ class JAN24_API ACameraPawn : public ASpectatorPawn
 	virtual void MoveBackward(const FInputActionValue& Value);
 	virtual void MoveRight(const FInputActionValue& Value);
 	virtual void MoveLeft(const FInputActionValue& Value);
+
+	void Zoom(const FInputActionValue& Value);
 	
 public:
     ACameraPawn();
 
-    // Spring arm to provide offset and control over camera position
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-    USpringArmComponent* SpringArm;
-    
-    // Camera component for the actual camera view
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-    UCameraComponent* Camera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* Camera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float ZoomSpeed = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float MinZoom = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float MaxZoom = 1600.0f;
 };
