@@ -29,8 +29,6 @@ void ACameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Triggered, this, &ACameraPawn::MoveLeft);
 
 	EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ACameraPawn::Zoom);
-
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Callbacks set"));
 }
 
 void ACameraPawn::MoveForward(const FInputActionValue& Value)
