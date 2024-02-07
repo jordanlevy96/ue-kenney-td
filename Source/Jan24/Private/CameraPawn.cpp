@@ -3,13 +3,20 @@
 ACameraPawn::ACameraPawn()
 {
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(RootComponent); // Attach to the root component
+	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bDoCollisionTest = false; // Avoid the camera adjusting its position based on collision
-	SpringArm->TargetArmLength = 800.f; // Starting length of the spring arm (adjust as needed)
-	SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f)); // Adjust to the desired angle for RTS
+	SpringArm->TargetArmLength = 800.f;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Attach to the spring arm
+	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+}
+
+void ACameraPawn::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetActorLocation(FVector(0, 0, 100));
+	SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 }
 
 void ACameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -33,31 +40,36 @@ void ACameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void ACameraPawn::MoveForward(const FInputActionValue& Value)
 {
-	FVector MoveDirection = GetActorForwardVector() * Value.Get<float>();
-	AddMovementInput(MoveDirection);
+	float CurrentPanSpeed = SpringArm->TargetArmLength <= ZoomLevelForIncreasedPanSpeed ? ClosePanSpeed : FarPanSpeed;
+	FVector MoveDirection = GetActorForwardVector() * Value.Get<float>() * CurrentPanSpeed;
+	SetActorLocation(GetActorLocation() + MoveDirection, true);
 }
 
 void ACameraPawn::MoveBackward(const FInputActionValue& Value)
 {
-	FVector MoveDirection = GetActorForwardVector() * -Value.Get<float>();
-	AddMovementInput(MoveDirection);
+	float CurrentPanSpeed = SpringArm->TargetArmLength <= ZoomLevelForIncreasedPanSpeed ? ClosePanSpeed : FarPanSpeed;
+	FVector MoveDirection = GetActorForwardVector() * -Value.Get<float>() * CurrentPanSpeed;
+	SetActorLocation(GetActorLocation() + MoveDirection, true);
 }
 
 void ACameraPawn::MoveRight(const FInputActionValue& Value)
 {
-	FVector MoveDirection = GetActorRightVector() * Value.Get<float>();
-	AddMovementInput(MoveDirection);
+	float CurrentPanSpeed = SpringArm->TargetArmLength <= ZoomLevelForIncreasedPanSpeed ? ClosePanSpeed : FarPanSpeed;
+	FVector MoveDirection = GetActorRightVector() * Value.Get<float>() * CurrentPanSpeed;
+	SetActorLocation(GetActorLocation() + MoveDirection, true);
 }
 
 void ACameraPawn::MoveLeft(const FInputActionValue& Value)
 {
-	FVector MoveDirection = GetActorRightVector() * -Value.Get<float>();
-	AddMovementInput(MoveDirection);
+	float CurrentPanSpeed = SpringArm->TargetArmLength <= ZoomLevelForIncreasedPanSpeed ? ClosePanSpeed : FarPanSpeed;
+	FVector MoveDirection = GetActorRightVector() * -Value.Get<float>() * CurrentPanSpeed;
+	SetActorLocation(GetActorLocation() + MoveDirection, true);
 }
 
 void ACameraPawn::Zoom(const FInputActionValue& Value)
 {
-	const float AxisValue = -Value.Get<float>();	
+	const float AxisValue = -Value.Get<float>();
+	UE_LOG(LogTemp, Warning, TEXT("Zoom: %f"), SpringArm->TargetArmLength);
 	if (AxisValue != 0.f)
 	{
 		SpringArm->TargetArmLength = FMath::Clamp(SpringArm->TargetArmLength + AxisValue * ZoomSpeed, MinZoom, MaxZoom);

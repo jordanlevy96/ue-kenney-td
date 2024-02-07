@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -22,9 +20,11 @@ class JAN24_API ACameraPawn : public ASpectatorPawn
 	virtual void MoveLeft(const FInputActionValue& Value);
 
 	void Zoom(const FInputActionValue& Value);
+
 	
 public:
     ACameraPawn();
+	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArm;
@@ -39,5 +39,14 @@ public:
 	float MinZoom = 50.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float MaxZoom = 1600.0f;
+	float MaxZoom = 3200.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
+	float FarPanSpeed = 25.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
+	float ClosePanSpeed = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera")
+	float ZoomLevelForIncreasedPanSpeed = 1600.0f; 
 };

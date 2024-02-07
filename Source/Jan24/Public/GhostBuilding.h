@@ -22,4 +22,5 @@ class JAN24_API AGhostBuilding : public ABuilding
 	static void UpdateMaterial(UMaterialInterface* Material, UStaticMeshComponent* Mesh);
 	
 	UStaticMeshComponent* GhostMesh;
+
 };
